@@ -4,16 +4,23 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.graphics.Color;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.*;
+import android.content.SharedPreferences;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class MainActivity extends Activity {
 
     LinearLayout layout;
+    SharedPreferences datos;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        datos = getSharedPreferences("instrumentos", MODE_PRIVATE);
+
         mostrarInicio();
     }
 
@@ -58,17 +65,55 @@ public class MainActivity extends Activity {
         layout.removeAllViews();
 
         TextView titulo = new TextView(this);
-        titulo.setText("Instrumentos disponibles");
+        titulo.setText("Instrumentos publicados");
         titulo.setTextSize(24);
         titulo.setGravity(Gravity.CENTER);
         layout.addView(titulo);
 
-        TextView mensaje = new TextView(this);
-        mensaje.setText("Todavía no hay instrumentos publicados.");
-        mensaje.setTextSize(18);
-        mensaje.setGravity(Gravity.CENTER);
-        mensaje.setPadding(0, 40, 0, 40);
-        layout.addView(mensaje);
+        try {
+            String guardados = datos.getString("lista", "[]");
+            JSONArray lista = new JSONArray(guardados);
+
+            if (lista.length() == 0) {
+
+                TextView vacio = new TextView(this);
+                vacio.setText("Todavía no hay instrumentos publicados.");
+                vacio.setTextSize(18);
+                vacio.setGravity(Gravity.CENTER);
+                vacio.setPadding(0, 40, 0, 40);
+                layout.addView(vacio);
+
+            } else {
+
+                for (int i = 0; i < lista.length(); i++) {
+
+                    JSONObject instrumento = lista.getJSONObject(i);
+
+                    TextView item = new TextView(this);
+
+                    String texto =
+                            "Instrumento: " +
+                            instrumento.getString("nombre") +
+                            "\nPrecio: $" +
+                            instrumento.getString("precio") +
+                            "\nDescripción: " +
+                            instrumento.getString("descripcion");
+
+                    item.setText(texto);
+                    item.setTextSize(18);
+                    item.setPadding(20, 20, 20, 20);
+
+                    layout.addView(item);
+                }
+            }
+
+        } catch (Exception e) {
+            Toast.makeText(
+                    this,
+                    "Error al cargar los instrumentos",
+                    Toast.LENGTH_LONG
+            ).show();
+        }
 
         Button volver = new Button(this);
         volver.setText("Volver");
@@ -78,6 +123,7 @@ public class MainActivity extends Activity {
     }
 
     private void mostrarPublicar() {
+
         layout.removeAllViews();
 
         TextView titulo = new TextView(this);
@@ -108,16 +154,68 @@ public class MainActivity extends Activity {
         layout.addView(volver);
 
         publicar.setOnClickListener(v -> {
-            Toast.makeText(
-                    this,
-                    "Instrumento publicado",
-                    Toast.LENGTH_LONG
-            ).show();
+
+            String nombreTexto = nombre.getText().toString().trim();
+            String precioTexto = precio.getText().toString().trim();
+            String descripcionTexto = descripcion.getText().toString().trim();
+
+            if (nombreTexto.isEmpty() ||
+                precioTexto.isEmpty() ||
+                descripcionTexto.isEmpty()) {
+
+                Toast.makeText(
+                        this,
+                        "Completa todos los campos",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return;
+            }
+
+            try {
+
+                String guardados =
+                        datos.getString("lista", "[]");
+
+                JSONArray lista =
+                        new JSONArray(guardados);
+
+                JSONObject nuevo =
+                        new JSONObject();
+
+                nuevo.put("nombre", nombreTexto);
+                nuevo.put("precio", precioTexto);
+                nuevo.put("descripcion", descripcionTexto);
+
+                lista.put(nuevo);
+
+                datos.edit()
+                        .putString("lista", lista.toString())
+                        .apply();
+
+                Toast.makeText(
+                        this,
+                        "Instrumento guardado correctamente",
+                        Toast.LENGTH_LONG
+                ).show();
+
+                mostrarInicio();
+
+            } catch (Exception e) {
+
+                Toast.makeText(
+                        this,
+                        "No se pudo guardar el instrumento",
+                        Toast.LENGTH_LONG
+                ).show();
+            }
         });
 
         volver.setOnClickListener(v -> mostrarInicio());
     }
 }
+
+
         
         
 
