@@ -1,0 +1,33 @@
+name: Construir APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar proyecto
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Dar permisos a Gradle
+        run: chmod +x gradlew
+
+      - name: Construir APK
+        run: ./gradlew assembleDebug
+
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Instrumentos-en-Mano-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
