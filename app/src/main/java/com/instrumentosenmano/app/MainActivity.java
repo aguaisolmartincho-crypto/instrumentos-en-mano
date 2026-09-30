@@ -1,4 +1,4 @@
-package com.instrumentosenmano.app;
+lopackage com.instrumentosenmano.app;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -791,4 +791,7 @@ public class MainActivity extends Activity {
 
                 listaVista.addView(error);
             }
-      
+              }
+    }
+}
+}
