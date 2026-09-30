@@ -1,0 +1,27 @@
+name: Extraer proyecto Android
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extraer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Extraer ZIP
+        run: |
+          unzip -o Instrumentos_en_Mano_ordenado.zip -d .
+
+      - name: Guardar archivos extraídos
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Extraer proyecto Android" || echo "Sin cambios"
+          git push
